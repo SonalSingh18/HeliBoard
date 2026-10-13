@@ -25,6 +25,7 @@ import helium314.keyboard.latin.common.combiningRange
 import helium314.keyboard.latin.common.moveStepsToCharCount
 import helium314.keyboard.latin.extrakeys.ExtraKeysModifiers
 import helium314.keyboard.latin.extrakeys.ExtraKeysSettings
+import helium314.keyboard.latin.extrakeys.ExtraKeysVisibility
 import helium314.keyboard.latin.inputlogic.InputLogic
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.BackgroundGatheringCache
@@ -115,7 +116,12 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
                 return
             }
             KeyCode.TOGGLE_EXTRA_KEYS -> {
-                keyboardSwitcher.extraKeysView?.toggleVisibility(settings.current)
+                val sv = settings.current
+                inputLogic.finishInput() // composing word stays as it is, no composing while extra keys are shown
+                ExtraKeysVisibility.toggle(sv.mInputAttributes.mTargetApplicationPackageName, sv.mShowExtraKeys)
+                settings.loadSettings(latinIME, sv.mLocale, sv.mInputAttributes) // extra keys disable suggestions
+                keyboardSwitcher.extraKeysView?.update(settings.current)
+                latinIME.setNeutralSuggestionStrip()
                 return
             }
             KeyCode.TOGGLE_INCOGNITO_MODE -> {

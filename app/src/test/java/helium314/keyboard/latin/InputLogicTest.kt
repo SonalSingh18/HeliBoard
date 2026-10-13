@@ -19,6 +19,7 @@ import helium314.keyboard.event.Event
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.MainKeyboardView
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
+import helium314.keyboard.latin.extrakeys.ExtraKeysSettings
 import helium314.keyboard.latin.ShadowFacilitator2.Companion.lastAddedWord
 import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo
 import helium314.keyboard.latin.common.Constants
@@ -114,6 +115,17 @@ class InputLogicTest {
         assertEquals("", connectionComposingText)
         assertEquals("", composingText) // so the next letter can't be added to "f"
         assertEquals("f", text)
+    }
+
+    @Test fun noSuggestionsOrComposingWhileExtraKeysShown() {
+        latinIME.prefs().edit().putString(ExtraKeysSettings.PREF_MODE, ExtraKeysSettings.Mode.ALWAYS.name).commit()
+        assertTrue(Settings.getValues().mShowExtraKeys)
+        assertFalse(Settings.getValues().needsToLookupSuggestions())
+        chainInput("hello")
+        assertEquals("", composingText)
+        assertEquals("hello", text)
+        latinIME.prefs().edit().putString(ExtraKeysSettings.PREF_MODE, ExtraKeysSettings.Mode.OFF.name).commit()
+        assertFalse(Settings.getValues().mShowExtraKeys)
     }
 
     @Test fun delete() {

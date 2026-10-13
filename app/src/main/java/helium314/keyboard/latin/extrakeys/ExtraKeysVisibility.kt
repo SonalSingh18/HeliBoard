@@ -15,6 +15,7 @@ object ExtraKeysVisibility {
     var isShown = false
         internal set
 
+    @JvmStatic
     fun resolve(packageName: String?, shownBySettings: Boolean): Boolean {
         if (hasOverride && overridePackage != packageName)
             hasOverride = false

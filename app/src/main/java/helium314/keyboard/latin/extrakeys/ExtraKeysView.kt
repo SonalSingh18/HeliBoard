@@ -64,7 +64,7 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
             pageIndex = 0
             buildKeys()
         }
-        val show = ExtraKeysVisibility.resolve(sv.mInputAttributes.mTargetApplicationPackageName, sv.mShowExtraKeys)
+        val show = sv.mShowExtraKeys // includes toolbar key override, see ExtraKeysVisibility
         ExtraKeysVisibility.isShown = show
         updateToolbarKeys(show) // toolbar may have been re-created, so always update
         val newVisibility = if (show) VISIBLE else GONE
@@ -72,12 +72,6 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
         visibility = newVisibility
         if (newVisibility == GONE)
             ExtraKeysModifiers.reset() // a hidden locked Ctrl would silently change typing on the main keyboard
-    }
-
-    /** Shows or hides the extra keys in the current app, without changing settings. */
-    fun toggleVisibility(sv: SettingsValues) {
-        ExtraKeysVisibility.toggle(sv.mInputAttributes.mTargetApplicationPackageName, visibility == VISIBLE)
-        update(sv)
     }
 
     private fun updateToolbarKeys(shown: Boolean) {
