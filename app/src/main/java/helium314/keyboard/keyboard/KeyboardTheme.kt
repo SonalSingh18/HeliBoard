@@ -20,6 +20,7 @@ import helium314.keyboard.latin.common.ColorType
 import helium314.keyboard.latin.common.Colors
 import helium314.keyboard.latin.common.DefaultColors
 import helium314.keyboard.latin.common.DynamicColors
+import helium314.keyboard.latin.common.blackBlueGrayColors
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.ResourceUtils
@@ -54,6 +55,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val THEME_DARK = "dark"
         const val THEME_DARKER = "darker"
         const val THEME_BLACK = "black"
+        const val THEME_BLACK_BLUE_GRAY = "black_blue_gray"
         const val THEME_DYNAMIC = "dynamic"
         const val THEME_BLUE_GRAY = "blue_gray"
         const val THEME_BROWN = "brown"
@@ -71,6 +73,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             if (prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE) == STYLE_HOLO) THEME_HOLO_WHITE else null,
             THEME_DARKER,
             THEME_BLACK,
+            THEME_BLACK_BLUE_GRAY,
             if (!isNight) THEME_BLUE_GRAY else null,
             if (!isNight) THEME_BROWN else null,
             THEME_CHOCOLATE,
@@ -324,6 +327,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     Color.BLACK,
                     keyboardBackground = backgroundImage
                 )
+                THEME_BLACK_BLUE_GRAY -> blackBlueGrayColors(themeStyle, hasBorders, backgroundImage)
                 THEME_VIOLETTE -> DefaultColors(
                     themeStyle,
                     hasBorders,

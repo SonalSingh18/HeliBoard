@@ -992,6 +992,8 @@ New dictionary:
     <string name="spell_check_suggestions_summary">Show suggestions when selecting a word with red underline. Requires setting app as default spell checker.</string>
 
 
+    <!-- Theme name for black theme with dark gray keys and blue-gray functional keys -->
+    <string name="theme_name_black_blue_gray" tools:keep="@string/theme_name_black_blue_gray">Black blue-gray</string>
     <!-- Name of the toolbar key that marks the current app as terminal app for the extra keys -->
     <string name="terminal" tools:keep="@string/terminal">Terminal mode</string>
     <!-- Name of the toolbar key that shows or hides the extra keys rows in the current app -->
