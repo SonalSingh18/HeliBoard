@@ -906,9 +906,13 @@ public final class InputLogic {
                         ? KeyCode.codePointToKeyEventCode(event.getCodePoint())
                         : KeyCode.keyCodeToKeyEventCode(keyCode);
                 if (keyEventCode != KeyEvent.KEYCODE_UNKNOWN) {
-                    // shortcuts like ctrl + A should act on the text as the user sees it, not on a composing word
-                    if ((event.getMetaState() & (KeyEvent.META_CTRL_MASK | KeyEvent.META_ALT_MASK | KeyEvent.META_META_MASK)) != 0)
-                        commitTyped(sv, LastComposedWord.NOT_A_SEPARATOR);
+                    // Key events (tab, arrows, ctrl + A, ...) should act on the text as the user sees it, not on a
+                    // composing word that e.g. web terminals don't show, and would only receive after the key.
+                    // Finish composing in place: committing would move the cursor to the end of the word.
+                    if (mWordComposer.isComposingWord()) {
+                        mConnection.finishComposingText();
+                        resetComposingState(true);
+                    }
                     sendDownUpKeyEventWithMetaState(keyEventCode, event.getMetaState());
                     return;
                 }

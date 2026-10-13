@@ -105,6 +105,17 @@ class InputLogicTest {
         assertTrue(text.startsWith("hello"))
     }
 
+    @Test fun tabCommitsComposingWord() { // web terminals only get the composing word when it's committed
+        chainInput("f")
+        assertTrue(composer.isComposingWord)
+        latinIME.onEvent(Event.createSoftwareKeypressEvent(Event.NOT_A_CODE_POINT, KeyCode.TAB, 0, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false))
+        handleMessages()
+        assertFalse(composer.isComposingWord)
+        assertEquals("", connectionComposingText)
+        assertEquals("", composingText) // so the next letter can't be added to "f"
+        assertEquals("f", text)
+    }
+
     @Test fun delete() {
         setText("hello there ")
         functionalKeyPress(KeyCode.DELETE)
