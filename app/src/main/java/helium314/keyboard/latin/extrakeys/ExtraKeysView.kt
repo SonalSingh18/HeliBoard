@@ -4,8 +4,10 @@ package helium314.keyboard.latin.extrakeys
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.StateListDrawable
 import android.os.Handler
 import android.os.Looper
@@ -19,6 +21,7 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.graphics.ColorUtils
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
 import helium314.keyboard.keyboard.KeyboardSwitcher
@@ -29,6 +32,7 @@ import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.settings.SettingsValues
 import helium314.keyboard.latin.utils.ToolbarKey
+import helium314.keyboard.latin.utils.brightenOrDarken
 import helium314.keyboard.latin.utils.prefs
 
 /** Rows of terminal keys (Esc, Tab, Ctrl, Alt, arrows, ...) shown above the main keyboard. */
@@ -118,15 +122,14 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
 
     @SuppressLint("ClickableViewAccessibility") // performClick is called on ACTION_UP
     private fun createKeyView(key: ExtraKey): TextView {
-        val colors = Settings.getValues().mColors
         val view = TextView(context)
         view.text = key.label
         view.gravity = Gravity.CENTER
         view.maxLines = 1
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 2) 13f else 15f)
-        view.setTextColor(colors.get(ColorType.KEY_TEXT))
-        view.background = keyBackground(ColorType.FUNCTIONAL_KEY_BACKGROUND, pressed = true)
         view.isClickable = true
+        val functional = key.type == ExtraKeyType.MODIFIER || key.type == ExtraKeyType.PAGE || key.code == KeyCode.SYMBOL_ALPHA
+        setKeyStyle(view, functional)
         when (key.type) {
             ExtraKeyType.MODIFIER -> {
                 val modifier = if (key.code == KeyCode.ALT) ExtraKeysModifiers.alt else ExtraKeysModifiers.ctrl
@@ -138,44 +141,53 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
         return view
     }
 
+    /** With key borders, keys look like keyboard keys (functional keys like shift), otherwise like a flat toolbar. */
+    private fun setKeyStyle(view: TextView, functional: Boolean) {
+        val colors = Settings.getValues().mColors
+        view.setTextColor(colors.get(if (functional) ColorType.FUNCTIONAL_KEY_TEXT else ColorType.KEY_TEXT))
+        view.setTypeface(null, Typeface.NORMAL)
+        view.background = if (colors.hasKeyBorders) {
+            val fill = colors.get(if (functional) ColorType.FUNCTIONAL_KEY_BACKGROUND else ColorType.KEY_BACKGROUND)
+            keyBackground(fill, brightenOrDarken(fill, true))
+        } else {
+            keyBackground(null, colors.get(ColorType.FUNCTIONAL_KEY_BACKGROUND))
+        }
+    }
+
     private fun updateModifierViews() {
         val colors = Settings.getValues().mColors
+        val accent = colors.get(ColorType.GESTURE_TRAIL).takeIf { Color.alpha(it) != 0 } // accent in default themes
+            ?: colors.get(ColorType.ACTION_KEY_BACKGROUND)
         modifierViews.forEach { (view, modifier) ->
             when (modifier.state) {
-                StickyModifier.State.OFF -> {
-                    view.background = keyBackground(ColorType.FUNCTIONAL_KEY_BACKGROUND, pressed = true)
-                    view.setTextColor(colors.get(ColorType.KEY_TEXT))
-                    view.setTypeface(null, Typeface.NORMAL)
-                }
+                StickyModifier.State.OFF -> setKeyStyle(view, true)
                 StickyModifier.State.ARMED -> { // outlined in accent color
-                    view.background = keyBackground(ColorType.KEY_BACKGROUND, pressed = false, strokeColor = ColorType.ACTION_KEY_BACKGROUND)
-                    view.setTextColor(colors.get(ColorType.KEY_TEXT))
+                    setKeyStyle(view, true)
+                    val fill = if (colors.hasKeyBorders) colors.get(ColorType.FUNCTIONAL_KEY_BACKGROUND) else null
+                    view.background = keyBackground(fill, accent, stroke = accent)
                     view.setTypeface(null, Typeface.BOLD)
                 }
                 StickyModifier.State.LOCKED -> { // filled with accent color
-                    view.background = keyBackground(ColorType.ACTION_KEY_BACKGROUND, pressed = false)
-                    view.setTextColor(colors.get(ColorType.ACTION_KEY_ICON))
+                    view.background = keyBackground(accent, brightenOrDarken(accent, true))
+                    view.setTextColor(if (ColorUtils.calculateLuminance(accent) > 0.4) Color.BLACK else Color.WHITE)
                     view.setTypeface(null, Typeface.BOLD)
                 }
             }
         }
     }
 
-    /** normal state is transparent if [pressed], otherwise filled with [color] */
-    private fun keyBackground(color: ColorType, pressed: Boolean, strokeColor: ColorType? = null): StateListDrawable {
-        val colors = Settings.getValues().mColors
+    /** rounded key shape, [fill] null means transparent */
+    private fun keyBackground(fill: Int?, pressedFill: Int, stroke: Int? = null): StateListDrawable {
         val radius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, resources.displayMetrics)
         val inset = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, resources.displayMetrics).toInt()
-        fun shape(fill: Int?) = GradientDrawable().apply {
+        fun shape(color: Int?) = InsetDrawable(GradientDrawable().apply {
             cornerRadius = radius
-            setColor(fill ?: 0)
-            if (strokeColor != null) setStroke(inset, colors.get(strokeColor))
-        }
-        val normal = shape(if (pressed) null else colors.get(color))
-        val down = shape(colors.get(color)).apply { alpha = if (pressed) 255 else 180 }
+            setColor(color ?: Color.TRANSPARENT)
+            if (stroke != null) setStroke(inset, stroke)
+        }, inset)
         return StateListDrawable().apply {
-            addState(intArrayOf(android.R.attr.state_pressed), android.graphics.drawable.InsetDrawable(down, inset))
-            addState(intArrayOf(), android.graphics.drawable.InsetDrawable(normal, inset))
+            addState(intArrayOf(android.R.attr.state_pressed), shape(pressedFill))
+            addState(intArrayOf(), shape(fill))
         }
     }
 
