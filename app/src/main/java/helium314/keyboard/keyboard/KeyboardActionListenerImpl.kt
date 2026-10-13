@@ -23,6 +23,7 @@ import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.common.InputPointers
 import helium314.keyboard.latin.common.combiningRange
 import helium314.keyboard.latin.common.moveStepsToCharCount
+import helium314.keyboard.latin.extrakeys.ExtraKeysModifiers
 import helium314.keyboard.latin.inputlogic.InputLogic
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.BackgroundGatheringCache
@@ -145,10 +146,13 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 //            if (mkv.keyboard?.mId?.isAlphabetShiftedManually == true)
 //                Event.createSoftwareKeypressEvent(primaryCode, metaState or KeyEvent.META_SHIFT_ON, mkv.getKeyX(x), mkv.getKeyY(y), isKeyRepeat)
 //            else Event.createSoftwareKeypressEvent(primaryCode, metaState, mkv.getKeyX(x), mkv.getKeyY(y), isKeyRepeat)
-            Event.createSoftwareKeypressEvent(primaryCode, metaState, mkv.getKeyX(x), mkv.getKeyY(y), isKeyRepeat)
+            val shiftedManually = mkv.keyboard?.mId?.element?.isAlphabetShiftedManually == true
+            val meta = ExtraKeysModifiers.adjustMetaState(metaState, primaryCode, shiftedManually)
+            Event.createSoftwareKeypressEvent(primaryCode, meta, mkv.getKeyX(x), mkv.getKeyY(y), isKeyRepeat)
         }
         latinIME.onEvent(event)
         metaAfterCodeInput(primaryCode)
+        ExtraKeysModifiers.afterCodeInput(primaryCode)
     }
 
     override fun onTextInput(text: String?) = latinIME.onTextInput(text)
