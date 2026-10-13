@@ -55,12 +55,20 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
                 android:theme="@style/platformActivityTheme"
                 android:icon="@mipmap/ic_launcher"
                 android:windowSoftInputMode="adjustResize"
+                android:exported="true" />
+
+        <!-- Launcher icon, toggled by the "show app icon" setting. Disabled by default in the manifest, because
+             Android 10+ only skips the placeholder icon for hidden launcher activities if they are disabled by default. -->
+        <activity-alias android:name="helium314.keyboard.settings.LauncherIcon"
+                android:targetActivity="helium314.keyboard.settings.SettingsActivity"
+                android:icon="@mipmap/ic_launcher"
+                android:enabled="false"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <!-- separate activity that's used internally, only necessary in case the launcher icon is disabled on Android < 10 -->
         <activity android:name="helium314.keyboard.settings.SettingsActivity2"

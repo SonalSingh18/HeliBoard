@@ -9,7 +9,6 @@ package helium314.keyboard.latin.settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
@@ -381,13 +380,6 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
 
     public static boolean readShowSetupWizardIcon(final SharedPreferences prefs,
                                                   final Context context) {
-        if (!prefs.contains(PREF_SHOW_SETUP_WIZARD_ICON)) {
-            final ApplicationInfo appInfo = context.getApplicationInfo();
-            final boolean isApplicationInSystemImage =
-                    (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-            // Default value
-            return !isApplicationInSystemImage;
-        }
         return prefs.getBoolean(PREF_SHOW_SETUP_WIZARD_ICON, Defaults.PREF_SHOW_SETUP_WIZARD_ICON);
     }
 

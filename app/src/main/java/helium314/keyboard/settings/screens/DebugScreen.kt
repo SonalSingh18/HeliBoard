@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.settings.screens
 
+import android.content.ComponentName
+import helium314.keyboard.settings.SettingsActivity
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,7 +47,7 @@ fun DebugScreen(
     SearchSettingsScreen(
         onClickBack = {
             if (needsRestart) {
-                val intent = Intent.makeRestartActivityTask(ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)?.component)
+                val intent = Intent.makeRestartActivityTask(ComponentName(ctx, SettingsActivity::class.java)) // launcher icon may be hidden
                 intent.setPackage(ctx.packageName)
                 ctx.startActivity(intent)
                 Runtime.getRuntime().exit(0)

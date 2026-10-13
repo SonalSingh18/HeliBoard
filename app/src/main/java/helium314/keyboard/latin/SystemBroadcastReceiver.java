@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Process;
 
 import helium314.keyboard.latin.utils.KtxKt;
@@ -22,7 +21,6 @@ import android.view.inputmethod.InputMethodManager;
 import helium314.keyboard.keyboard.KeyboardLayoutSet;
 import helium314.keyboard.latin.settings.Settings;
 import helium314.keyboard.latin.utils.UncachedInputMethodManagerUtils;
-import helium314.keyboard.settings.SettingsActivity;
 
 /**
  * This class detects the {@link Intent#ACTION_MY_PACKAGE_REPLACED} broadcast intent when this IME
@@ -84,15 +82,17 @@ public final class SystemBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    /** launcher icon activity-alias, see AndroidManifest.xml */
+    public static final String LAUNCHER_ICON_ALIAS = "helium314.keyboard.settings.LauncherIcon";
+
     public static void toggleAppIcon(final Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            return; // can't change visibility in Android 10 and above
         final SharedPreferences prefs = KtxKt.prefs(context);
+        // hidden is the manifest default (disabled), which also avoids the Android 10+ placeholder icon
         context.getPackageManager().setComponentEnabledSetting(
-                new ComponentName(context, SettingsActivity.class),
+                new ComponentName(context, LAUNCHER_ICON_ALIAS),
                 Settings.readShowSetupWizardIcon(prefs, context)
                         ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                        : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        : PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
                 PackageManager.DONT_KILL_APP);
     }
 }
