@@ -24,6 +24,7 @@ import helium314.keyboard.latin.common.InputPointers
 import helium314.keyboard.latin.common.combiningRange
 import helium314.keyboard.latin.common.moveStepsToCharCount
 import helium314.keyboard.latin.extrakeys.ExtraKeysModifiers
+import helium314.keyboard.latin.extrakeys.ExtraKeysSettings
 import helium314.keyboard.latin.inputlogic.InputLogic
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.utils.BackgroundGatheringCache
@@ -106,6 +107,13 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
     override fun onCodeInput(primaryCode: Int, x: Int, y: Int, isKeyRepeat: Boolean) {
         when (primaryCode) {
             KeyCode.TOGGLE_AUTOCORRECT -> return settings.toggleAutoCorrect()
+            KeyCode.TOGGLE_TERMINAL_MODE -> {
+                val packageName = latinIME.currentInputEditorInfo?.packageName ?: return
+                ExtraKeysSettings.toggleTerminalApp(latinIME.prefs(), packageName) // settings are reloaded on pref change
+                keyboardSwitcher.reloadMainKeyboard() // updates extra keys visibility
+                latinIME.setNeutralSuggestionStrip()
+                return
+            }
             KeyCode.TOGGLE_INCOGNITO_MODE -> {
                 settings.toggleAlwaysIncognitoMode()
                 BackgroundGatheringCache.clear()
