@@ -992,6 +992,26 @@ New dictionary:
     <string name="spell_check_suggestions_summary">Show suggestions when selecting a word with red underline. Requires setting app as default spell checker.</string>
 
 
+    <!-- Name of the toolbar key that marks the current app as terminal app for the extra keys -->
+    <string name="terminal" tools:keep="@string/terminal">Terminal mode</string>
+    <!-- Settings category title for the terminal extra keys rows -->
+    <string name="settings_category_extra_keys">Extra keys</string>
+    <!-- Setting title: when to show the terminal extra keys rows -->
+    <string name="extra_keys_mode">Show extra keys</string>
+    <string name="extra_keys_mode_off">Off</string>
+    <string name="extra_keys_mode_always">Always</string>
+    <string name="extra_keys_mode_terminal">Only in terminal apps</string>
+    <!-- Setting title: number of extra keys rows -->
+    <string name="extra_keys_rows">Number of rows</string>
+    <!-- Setting title: list of apps treated as terminals -->
+    <string name="extra_keys_terminal_apps">Terminal apps</string>
+    <!-- Info text for the terminal apps setting -->
+    <string name="extra_keys_terminal_apps_info">Package names, separated by spaces. In these apps, autocorrect, suggestions, learning, auto-capitalization and automatic spaces are off. The Terminal mode toolbar key adds or removes the current app.</string>
+    <!-- Setting title: custom extra keys -->
+    <string name="extra_keys_config">Customize extra keys</string>
+    <!-- Info text for customizing extra keys -->
+    <string name="extra_keys_config_info">One row per line, keys separated by spaces, pages separated by an empty line. Names: ESC TAB CTRL ALT HOME END PGUP PGDN UP DOWN LEFT RIGHT INS ENTER SPACE BKSP F1 to F12, MENU (next page), SWITCH (letters and symbols). Any other single character is typed as it is. Reset to use the default for the number of rows.</string>
+
     <!-- gesture data gathering, new strings for normal use should go above -->
 
     <!-- Title for screen to provide gesture data for library development

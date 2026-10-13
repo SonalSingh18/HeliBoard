@@ -2,10 +2,17 @@
 
 package helium314.keyboard.latin.extrakeys
 
+import android.content.Context
 import android.view.KeyEvent
+import androidx.core.content.edit
+import androidx.test.core.app.ApplicationProvider
+import helium314.keyboard.ShadowInputMethodManager2
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -145,5 +152,49 @@ class ExtraKeysParserTest {
     @Test fun ignoresBlankAndInvalid() {
         val pages = ExtraKeysParser.parse("ESC  NOPE\r\n\n\n  \nTAB\n")
         assertEquals(listOf(listOf(listOf("Esc")), listOf(listOf("Tab"))), pages.map { p -> p.map { r -> r.map { it.label } } })
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowInputMethodManager2::class])
+class ExtraKeysSettingsTest {
+    private val prefs = ApplicationProvider.getApplicationContext<Context>().getSharedPreferences("extra_keys_test", Context.MODE_PRIVATE)
+
+    @Before fun clear() = prefs.edit { clear() }
+
+    @Test fun defaultIsTerminalOnlyWithTermux() {
+        assertTrue(ExtraKeysSettings.isTerminalMode(prefs, "com.termux"))
+        assertFalse(ExtraKeysSettings.isTerminalMode(prefs, "com.example.chat"))
+        assertFalse(ExtraKeysSettings.isTerminalMode(prefs, null))
+        assertTrue(ExtraKeysSettings.showExtraKeys(prefs, true))
+        assertFalse(ExtraKeysSettings.showExtraKeys(prefs, false))
+    }
+
+    @Test fun modes() {
+        prefs.edit { putString(ExtraKeysSettings.PREF_MODE, ExtraKeysSettings.Mode.ALWAYS.name) }
+        assertTrue(ExtraKeysSettings.showExtraKeys(prefs, false))
+        assertTrue(ExtraKeysSettings.isTerminalMode(prefs, "com.termux"))
+        prefs.edit { putString(ExtraKeysSettings.PREF_MODE, ExtraKeysSettings.Mode.OFF.name) }
+        assertFalse(ExtraKeysSettings.showExtraKeys(prefs, true))
+        assertFalse(ExtraKeysSettings.isTerminalMode(prefs, "com.termux")) // off means no overrides either
+    }
+
+    @Test fun toggleAddsAndRemovesApp() {
+        ExtraKeysSettings.toggleTerminalApp(prefs, "com.example.ssh")
+        assertTrue(ExtraKeysSettings.isTerminalMode(prefs, "com.example.ssh"))
+        assertTrue(ExtraKeysSettings.isTerminalMode(prefs, "com.termux")) // defaults kept
+        ExtraKeysSettings.toggleTerminalApp(prefs, "com.example.ssh")
+        assertFalse(ExtraKeysSettings.isTerminalMode(prefs, "com.example.ssh"))
+    }
+
+    @Test fun configFollowsRowsUnlessCustomized() {
+        assertEquals(ExtraKeysParser.DEFAULT_CONFIG, ExtraKeysSettings.readConfig(prefs))
+        prefs.edit { putInt(ExtraKeysSettings.PREF_ROWS, 1) }
+        assertEquals(ExtraKeysParser.DEFAULT_CONFIG_ONE_ROW, ExtraKeysSettings.readConfig(prefs))
+        assertTrue(ExtraKeysParser.parse(ExtraKeysParser.DEFAULT_CONFIG_ONE_ROW).all { it.size == 1 })
+        prefs.edit { putString(ExtraKeysSettings.PREF_CONFIG, "ESC CTRL") }
+        assertEquals("ESC CTRL", ExtraKeysSettings.readConfig(prefs))
+        prefs.edit { putString(ExtraKeysSettings.PREF_CONFIG, "NOT_A_KEY") } // nothing valid -> default
+        assertEquals(ExtraKeysParser.DEFAULT_CONFIG_ONE_ROW, ExtraKeysSettings.readConfig(prefs))
     }
 }

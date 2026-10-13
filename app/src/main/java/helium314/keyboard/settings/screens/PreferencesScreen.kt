@@ -13,6 +13,7 @@ import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.latin.AudioAndHapticFeedbackManager
 import helium314.keyboard.latin.R
+import helium314.keyboard.latin.extrakeys.extraKeysSettingsItems
 import helium314.keyboard.latin.database.ClipboardDao
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
@@ -87,7 +88,7 @@ fun PreferencesScreen(
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.settings_screen_preferences),
-        settings = items
+        settings = items + extraKeysSettingsItems(prefs)
     )
 }
 

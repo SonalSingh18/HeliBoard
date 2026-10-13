@@ -24,6 +24,7 @@ import helium314.keyboard.keyboard.KeyboardActionListener;
 import helium314.keyboard.keyboard.KeyboardTheme;
 import helium314.keyboard.keyboard.internal.KeyboardState;
 import helium314.keyboard.keyboard.internal.keyboard_parser.LocaleKeyboardInfos;
+import helium314.keyboard.latin.extrakeys.ExtraKeysSettings;
 import helium314.keyboard.latin.InputAttributes;
 import helium314.keyboard.latin.PunctuationSuggestions;
 import helium314.keyboard.latin.R;
@@ -89,6 +90,9 @@ public class SettingsValues {
     public final boolean mTouchpadEdgeScroll;
     public final boolean mDeleteSwipeEnabled;
     public final boolean mAutospaceAfterPunctuation;
+    // extra keys: terminal mode overrides some settings for this field only
+    public final boolean mTerminalMode;
+    public final boolean mShowExtraKeys;
     public final boolean mAutospaceAfterSuggestion;
     public final boolean mAutospaceAfterGestureTyping;
     public final boolean mAutospaceBeforeGestureTyping;
@@ -183,6 +187,8 @@ public class SettingsValues {
 
         // Store the input attributes
         mInputAttributes = inputAttributes;
+        mTerminalMode = ExtraKeysSettings.isTerminalMode(prefs, inputAttributes.mTargetApplicationPackageName);
+        mShowExtraKeys = ExtraKeysSettings.showExtraKeys(prefs, mTerminalMode);
 
         // Get the settings preferences
         mIsLocked = IsLockedCompatKt.isDeviceLocked(context);
@@ -190,7 +196,7 @@ public class SettingsValues {
         mToolbarMode = mIsLocked ? ToolbarMode.HIDDEN : Settings.readToolbarMode(prefs);
         mToolbarSwipeDownToHide = prefs.getBoolean(Settings.PREF_TOOLBAR_SWIPE_DOWN_TO_HIDE, Defaults.PREF_TOOLBAR_SWIPE_DOWN_TO_HIDE);
         mToolbarHidingGlobal = mIsLocked || prefs.getBoolean(Settings.PREF_TOOLBAR_HIDING_GLOBAL, Defaults.PREF_TOOLBAR_HIDING_GLOBAL);
-        mAutoCap = prefs.getBoolean(Settings.PREF_AUTO_CAP, Defaults.PREF_AUTO_CAP) && ScriptUtils.scriptSupportsUppercase(mLocale);
+        mAutoCap = prefs.getBoolean(Settings.PREF_AUTO_CAP, Defaults.PREF_AUTO_CAP) && ScriptUtils.scriptSupportsUppercase(mLocale) && !mTerminalMode;
         mVibrateOn = Settings.readVibrationEnabled(prefs);
         mVibrateInDndMode = prefs.getBoolean(Settings.PREF_VIBRATE_IN_DND_MODE, Defaults.PREF_VIBRATE_IN_DND_MODE);
         mSoundOn = prefs.getBoolean(Settings.PREF_SOUND_ON, Defaults.PREF_SOUND_ON);
@@ -218,11 +224,11 @@ public class SettingsValues {
         mVarToolbarDirection = mToolbarMode != ToolbarMode.HIDDEN && prefs.getBoolean(Settings.PREF_VARIABLE_TOOLBAR_DIRECTION, Defaults.PREF_VARIABLE_TOOLBAR_DIRECTION);
         mUsePersonalizedDicts = prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS);
         mUseDoubleSpacePeriod = prefs.getBoolean(Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD, Defaults.PREF_KEY_USE_DOUBLE_SPACE_PERIOD)
-                && inputAttributes.mIsGeneralTextInput;
+                && inputAttributes.mIsGeneralTextInput && !mTerminalMode;
         mBlockPotentiallyOffensive = prefs.getBoolean(Settings.PREF_BLOCK_POTENTIALLY_OFFENSIVE, Defaults.PREF_BLOCK_POTENTIALLY_OFFENSIVE);
         mUrlDetectionEnabled = prefs.getBoolean(Settings.PREF_URL_DETECTION, Defaults.PREF_URL_DETECTION);
         mAutoCorrectionEnabledPerUserSettings = prefs.getBoolean(Settings.PREF_AUTO_CORRECTION, Defaults.PREF_AUTO_CORRECTION);
-        mAutoCorrectEnabled = mAutoCorrectionEnabledPerUserSettings
+        mAutoCorrectEnabled = mAutoCorrectionEnabledPerUserSettings && !mTerminalMode
                 && (mInputAttributes.mInputTypeShouldAutoCorrect || prefs.getBoolean(Settings.PREF_MORE_AUTO_CORRECTION, Defaults.PREF_MORE_AUTO_CORRECTION))
                 && (mUrlDetectionEnabled || !InputTypeUtils.isUriOrEmailType(mInputAttributes.mInputType));
         mCenterSuggestionTextToEnter = prefs.getBoolean(Settings.PREF_CENTER_SUGGESTION_TEXT_TO_ENTER, Defaults.PREF_CENTER_SUGGESTION_TEXT_TO_ENTER);
@@ -269,9 +275,9 @@ public class SettingsValues {
                 && ((inputAttributes.mInputType & InputType.TYPE_MASK_VARIATION) != InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
                   || !prefs.getBoolean(Settings.PREF_ALWAYS_SHOW_SUGGESTIONS_EXCEPT_WEB_TEXT, Defaults.PREF_ALWAYS_SHOW_SUGGESTIONS_EXCEPT_WEB_TEXT));
         mSuggestionsEnabled = prefs.getBoolean(Settings.PREF_SHOW_SUGGESTIONS, Defaults.PREF_SHOW_SUGGESTIONS)
-            && (mInputAttributes.mShouldShowSuggestions || mOverrideShowingSuggestions) && !mSuggestionStripHiddenPerUserSettings;
+            && (mInputAttributes.mShouldShowSuggestions || mOverrideShowingSuggestions) && !mSuggestionStripHiddenPerUserSettings && !mTerminalMode;
         mIncognitoModeEnabled = prefs.getBoolean(Settings.PREF_ALWAYS_INCOGNITO_MODE, Defaults.PREF_ALWAYS_INCOGNITO_MODE) || mInputAttributes.mNoLearning
-                || mInputAttributes.mIsPasswordField;
+                || mInputAttributes.mIsPasswordField || mTerminalMode;
         mBottomRowScale = Settings.readBottomRowScale(prefs, isLandscape, isFolded);
         mSpaceSwipeHorizontal = Settings.readHorizontalSpaceSwipe(prefs);
         mSpaceSwipeVertical = Settings.readVerticalSpaceSwipe(prefs);
@@ -280,7 +286,7 @@ public class SettingsValues {
             Defaults.PREF_TOUCHPAD_SENSITIVITY);
         mTouchpadEdgeScroll = prefs.getBoolean(Settings.PREF_TOUCHPAD_EDGE_SCROLL, Defaults.PREF_TOUCHPAD_EDGE_SCROLL);
         mDeleteSwipeEnabled = prefs.getBoolean(Settings.PREF_DELETE_SWIPE, Defaults.PREF_DELETE_SWIPE);
-        mAutospaceAfterPunctuation = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, Defaults.PREF_AUTOSPACE_AFTER_PUNCTUATION);
+        mAutospaceAfterPunctuation = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, Defaults.PREF_AUTOSPACE_AFTER_PUNCTUATION) && !mTerminalMode;
         mAutospaceAfterSuggestion = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_SUGGESTION, Defaults.PREF_AUTOSPACE_AFTER_SUGGESTION);
         mAutospaceAfterGestureTyping = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_GESTURE_TYPING, Defaults.PREF_AUTOSPACE_AFTER_GESTURE_TYPING);
         mAutospaceBeforeGestureTyping = prefs.getBoolean(Settings.PREF_AUTOSPACE_BEFORE_GESTURE_TYPING, Defaults.PREF_AUTOSPACE_BEFORE_GESTURE_TYPING);
@@ -368,7 +374,7 @@ public class SettingsValues {
     }
 
     public boolean shouldInsertSpacesAutomatically() {
-        return mInputAttributes.mShouldInsertSpacesAutomatically;
+        return mInputAttributes.mShouldInsertSpacesAutomatically && !mTerminalMode;
     }
 
     public boolean isLanguageSwitchKeyEnabled() {

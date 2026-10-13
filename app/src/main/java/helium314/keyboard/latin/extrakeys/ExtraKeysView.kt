@@ -25,12 +25,15 @@ import helium314.keyboard.latin.AudioAndHapticFeedbackManager
 import helium314.keyboard.latin.common.ColorType
 import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.settings.SettingsValues
+import helium314.keyboard.latin.utils.prefs
 
 /** Rows of terminal keys (Esc, Tab, Ctrl, Alt, arrows, ...) shown above the main keyboard. */
 class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
     private var listener: KeyboardActionListener = KeyboardActionListener.EMPTY_LISTENER
     private val handler = Handler(Looper.getMainLooper())
-    private var pages: List<ExtraKeysPage> = ExtraKeysParser.parse(ExtraKeysParser.DEFAULT_CONFIG)
+    private var config = ExtraKeysSettings.readConfig(context.prefs())
+    private var pages: List<ExtraKeysPage> = ExtraKeysParser.parse(config)
     private var pageIndex = 0
     private val modifierViews = mutableListOf<Pair<TextView, StickyModifier>>()
     private var holdingRepeatKey = false
@@ -43,6 +46,22 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
 
     fun setKeyboardActionListener(listener: KeyboardActionListener) {
         this.listener = listener
+    }
+
+    /** Called when the keyboard is loaded, e.g. for a new input field or after settings changed. */
+    fun update(sv: SettingsValues) {
+        val newConfig = ExtraKeysSettings.readConfig(context.prefs())
+        if (newConfig != config) {
+            config = newConfig
+            pages = ExtraKeysParser.parse(config)
+            pageIndex = 0
+            buildKeys()
+        }
+        val newVisibility = if (sv.mShowExtraKeys) VISIBLE else GONE
+        if (newVisibility == visibility) return
+        visibility = newVisibility
+        if (newVisibility == GONE)
+            ExtraKeysModifiers.reset() // a hidden locked Ctrl would silently change typing on the main keyboard
     }
 
     override fun onAttachedToWindow() {

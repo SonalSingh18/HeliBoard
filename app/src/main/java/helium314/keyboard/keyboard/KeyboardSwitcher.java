@@ -239,6 +239,7 @@ public final class KeyboardSwitcher {
         final int visibility = isImeSuppressedByHardwareKeyboard(settingsValues, toggleState) ? View.GONE : View.VISIBLE;
         final int stripVisibility = mLatinIME.hasSuggestionStripView()? View.VISIBLE : View.GONE;
         mStripContainer.setVisibility(stripVisibility);
+        mExtraKeysView.update(settingsValues);
         PointerTracker.switchTo(mKeyboardView);
         mKeyboardView.setVisibility(visibility);
         // The visibility of {@link #mKeyboardView} must be aligned with {@link #MainKeyboardFrame}.

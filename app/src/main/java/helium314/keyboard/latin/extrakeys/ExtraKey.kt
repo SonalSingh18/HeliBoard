@@ -33,6 +33,10 @@ CTRL ALT PGDN LEFT DOWN RIGHT SWITCH
 / - | ~ _ \ MENU
 F1 F2 F3 F5 F10 : SWITCH"""
 
+    const val DEFAULT_CONFIG_ONE_ROW = """ESC TAB CTRL ALT LEFT DOWN UP RIGHT MENU
+
+HOME END PGUP PGDN / - | SWITCH MENU"""
+
     val ctrl = ExtraKey("Ctrl", KeyCode.CTRL, ExtraKeyType.MODIFIER)
     val alt = ExtraKey("Alt", KeyCode.ALT, ExtraKeyType.MODIFIER)
 
