@@ -994,6 +994,8 @@ New dictionary:
 
     <!-- Name of the toolbar key that marks the current app as terminal app for the extra keys -->
     <string name="terminal" tools:keep="@string/terminal">Terminal mode</string>
+    <!-- Name of the toolbar key that shows or hides the extra keys rows in the current app -->
+    <string name="extra_keys" tools:keep="@string/extra_keys">Extra keys</string>
     <!-- Settings category title for the terminal extra keys rows -->
     <string name="settings_category_extra_keys">Extra keys</string>
     <!-- Setting title: when to show the terminal extra keys rows -->

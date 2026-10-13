@@ -198,3 +198,32 @@ class ExtraKeysSettingsTest {
         assertEquals(ExtraKeysParser.DEFAULT_CONFIG_ONE_ROW, ExtraKeysSettings.readConfig(prefs))
     }
 }
+
+class ExtraKeysVisibilityTest {
+    @Before fun reset() = ExtraKeysVisibility.clear()
+
+    @Test fun followsSettingsWithoutOverride() {
+        assertTrue(ExtraKeysVisibility.resolve("a", true))
+        assertFalse(ExtraKeysVisibility.resolve("a", false))
+    }
+
+    @Test fun toggleOverridesInSameAppOnly() {
+        ExtraKeysVisibility.toggle("chat", currentlyShown = false)
+        assertTrue(ExtraKeysVisibility.resolve("chat", false))
+        assertTrue(ExtraKeysVisibility.resolve("chat", false)) // stays while in the app
+        assertFalse(ExtraKeysVisibility.resolve("other", false)) // ends in another app
+        assertFalse(ExtraKeysVisibility.resolve("chat", false)) // and does not come back
+    }
+
+    @Test fun toggleCanHideInTerminal() {
+        ExtraKeysVisibility.toggle("com.termux", currentlyShown = true)
+        assertFalse(ExtraKeysVisibility.resolve("com.termux", true))
+        ExtraKeysVisibility.toggle("com.termux", currentlyShown = false)
+        assertTrue(ExtraKeysVisibility.resolve("com.termux", true))
+    }
+
+    @Test fun worksWithoutPackageName() {
+        ExtraKeysVisibility.toggle(null, currentlyShown = false)
+        assertTrue(ExtraKeysVisibility.resolve(null, false))
+    }
+}

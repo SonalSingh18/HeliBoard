@@ -16,16 +16,19 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import helium314.keyboard.event.HapticEvent
 import helium314.keyboard.keyboard.KeyboardActionListener
+import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
 import helium314.keyboard.latin.AudioAndHapticFeedbackManager
 import helium314.keyboard.latin.common.ColorType
 import helium314.keyboard.latin.common.Constants
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.settings.SettingsValues
+import helium314.keyboard.latin.utils.ToolbarKey
 import helium314.keyboard.latin.utils.prefs
 
 /** Rows of terminal keys (Esc, Tab, Ctrl, Alt, arrows, ...) shown above the main keyboard. */
@@ -57,11 +60,28 @@ class ExtraKeysView(context: Context, attrs: AttributeSet?) : LinearLayout(conte
             pageIndex = 0
             buildKeys()
         }
-        val newVisibility = if (sv.mShowExtraKeys) VISIBLE else GONE
+        val show = ExtraKeysVisibility.resolve(sv.mInputAttributes.mTargetApplicationPackageName, sv.mShowExtraKeys)
+        ExtraKeysVisibility.isShown = show
+        updateToolbarKeys(show) // toolbar may have been re-created, so always update
+        val newVisibility = if (show) VISIBLE else GONE
         if (newVisibility == visibility) return
         visibility = newVisibility
         if (newVisibility == GONE)
             ExtraKeysModifiers.reset() // a hidden locked Ctrl would silently change typing on the main keyboard
+    }
+
+    /** Shows or hides the extra keys in the current app, without changing settings. */
+    fun toggleVisibility(sv: SettingsValues) {
+        ExtraKeysVisibility.toggle(sv.mInputAttributes.mTargetApplicationPackageName, visibility == VISIBLE)
+        update(sv)
+    }
+
+    private fun updateToolbarKeys(shown: Boolean) {
+        fun View.update() {
+            if (tag == ToolbarKey.EXTRA_KEYS) isActivated = shown
+            else if (this is ViewGroup) for (i in 0 until childCount) getChildAt(i).update()
+        }
+        KeyboardSwitcher.getInstance().stripContainer?.update()
     }
 
     override fun onAttachedToWindow() {

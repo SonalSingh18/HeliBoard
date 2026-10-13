@@ -114,6 +114,10 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
                 latinIME.setNeutralSuggestionStrip()
                 return
             }
+            KeyCode.TOGGLE_EXTRA_KEYS -> {
+                keyboardSwitcher.extraKeysView?.toggleVisibility(settings.current)
+                return
+            }
             KeyCode.TOGGLE_INCOGNITO_MODE -> {
                 settings.toggleAlwaysIncognitoMode()
                 BackgroundGatheringCache.clear()
