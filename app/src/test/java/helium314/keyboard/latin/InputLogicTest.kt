@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.latin
 
+import android.view.KeyEvent
 import android.os.Handler
 import android.os.Message
 import android.text.InputType
@@ -44,6 +45,8 @@ import kotlin.streams.asSequence
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [
@@ -89,6 +92,17 @@ class InputLogicTest {
         assertEquals("c", composingText)
         latinIME.mHandler.onFinishInput()
         assertEquals("", composingText)
+    }
+
+    @Test fun ctrlShortcutCommitsComposingWord() {
+        chainInput("hello")
+        assertEquals("hello", composingText)
+        latinIME.onEvent(Event.createSoftwareKeypressEvent('a'.code, KeyEvent.META_CTRL_ON, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false))
+        handleMessages()
+        assertFalse(composer.isComposingWord)
+        assertEquals("", connectionComposingText)
+        assertEquals("", composingText)
+        assertTrue(text.startsWith("hello"))
     }
 
     @Test fun delete() {

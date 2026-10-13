@@ -906,6 +906,9 @@ public final class InputLogic {
                         ? KeyCode.codePointToKeyEventCode(event.getCodePoint())
                         : KeyCode.keyCodeToKeyEventCode(keyCode);
                 if (keyEventCode != KeyEvent.KEYCODE_UNKNOWN) {
+                    // shortcuts like ctrl + A should act on the text as the user sees it, not on a composing word
+                    if ((event.getMetaState() & (KeyEvent.META_CTRL_MASK | KeyEvent.META_ALT_MASK | KeyEvent.META_META_MASK)) != 0)
+                        commitTyped(sv, LastComposedWord.NOT_A_SEPARATOR);
                     sendDownUpKeyEventWithMetaState(keyEventCode, event.getMetaState());
                     return;
                 }
