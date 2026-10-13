@@ -46,6 +46,7 @@ import helium314.keyboard.latin.LatinIME;
 import helium314.keyboard.latin.R;
 import helium314.keyboard.latin.RichInputMethodManager;
 import helium314.keyboard.latin.RichInputMethodSubtype;
+import helium314.keyboard.latin.extrakeys.ExtraKeysView;
 import helium314.keyboard.latin.settings.Settings;
 import helium314.keyboard.latin.settings.SettingsKt;
 import helium314.keyboard.latin.settings.SettingsValues;
@@ -75,6 +76,7 @@ public final class KeyboardSwitcher {
     private HorizontalScrollView mClipboardStripScrollView;
     private SuggestionStripView mSuggestionStripView;
     private FrameLayout mStripContainer;
+    private ExtraKeysView mExtraKeysView;
     private ClipboardHistoryView mClipboardHistoryView;
     private TextView mFakeToastView;
     private ImageView mBackgroundGatheringIndicator;
@@ -512,6 +514,8 @@ public final class KeyboardSwitcher {
 
     public FrameLayout getStripContainer() { return mStripContainer; }
 
+    public ExtraKeysView getExtraKeysView() { return mExtraKeysView; }
+
     public void deallocateMemory() {
         if (mKeyboardView != null) {
             mKeyboardView.cancelAllOngoingEvents();
@@ -567,6 +571,8 @@ public final class KeyboardSwitcher {
         mClipboardStripScrollView = mCurrentInputView.findViewById(R.id.clipboard_strip_scroll_view);
         mSuggestionStripView = mCurrentInputView.findViewById(R.id.suggestion_strip_view);
         mStripContainer = mCurrentInputView.findViewById(R.id.strip_container);
+        mExtraKeysView = mCurrentInputView.findViewById(R.id.extra_keys_view);
+        mExtraKeysView.setKeyboardActionListener(mLatinIME.mKeyboardActionListener);
         mBackgroundGatheringIndicator = mCurrentInputView.findViewById(R.id.backgroundGatheringIndicator);
 
         prefs.registerOnSharedPreferenceChangeListener(mSuggestionStripView);
